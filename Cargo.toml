@@ -1,0 +1,10 @@
+[package]
+name = "math"
+version = "0.1.0"
+edition = "2021"
+
+[dependencies]
+num-traits = "0.2.19"
+num-bigint = "0.4.6"
+rand = "0.9.1"
+#test dependencies
