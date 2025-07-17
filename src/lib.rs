@@ -1,17 +1,21 @@
 mod math_utils;
 pub mod utils {
-    pub use crate::math_utils::{gcd, is_prime_miller_rabin, mod_inv, mod_pow};
+    pub use crate::math_utils::*;
 }
 
 // use utils::{gcd,mod_pow};
-pub mod group;
-use group::lib;
+mod group;
+pub mod groups {
+    pub use crate::group::lib::*;
+}
 
 #[cfg(test)]
 mod tests {
+    use crate::groups::{find_generators, find_generators_by_order, is_generator};
+    use std::collections::HashSet;
     use super::*;
     use num_bigint::BigUint;
-    use num_traits::{FromPrimitive,Zero};
+    use num_traits::{FromPrimitive, Zero};
     #[test]
     fn test_mod_pow() {
         {
@@ -41,8 +45,62 @@ mod tests {
         use num_traits::FromPrimitive;
 
         let n = BigUint::from_u64(8051).unwrap();
-        let factor = group::lib::pollards_rho(n.clone());
+        let factor = group::lib::pollards_rho(n.clone(), 1..=10, 50, 1000);
         assert!(factor.is_some());
         assert!((n.clone() % factor.unwrap()).is_zero());
+    }
+    #[test]
+    fn test_order_of() {
+        assert_eq!(
+            groups::order_of(3u64, 1u64, groups::MulGroup { modulus: 7 }),
+            6u64
+        );
+        assert_eq!(
+            groups::order_of(1u64, 0u64, groups::AddGroup { modulus: 4 }),
+            4u64
+        );
+        assert_eq!(
+            groups::order_of(2u64, 0u64, groups::AddGroup { modulus: 4 }),
+            2u64
+        );
+    }
+    #[test]
+    fn test_is_generator() {
+        assert!(is_generator(
+            3,
+            1,
+            groups::MulGroup { modulus: 7 },
+            &[1, 2, 3, 4, 5, 6]
+        ));
+        assert!(is_generator(
+            5,
+            1,
+            groups::MulGroup { modulus: 7 },
+            &[1, 2, 3, 4, 5, 6]
+        ));
+    }
+    #[test]
+    fn test_find_generators() {
+        assert_eq!(
+            find_generators(1, &[1, 2, 3, 4, 5, 6], groups::MulGroup { modulus: 7 }),
+            vec![3, 5]
+        );
+    }
+    #[test]
+    fn test_find_generators_by_order() {
+        assert_eq!(
+            find_generators_by_order(1, 6, &[1, 2, 3, 4, 5, 6], groups::MulGroup { modulus: 7 }),
+            vec![3, 5]
+        );
+        let p = 719;
+        let op = groups::MulGroup { modulus: p };
+        let id = 1;
+        let group_elements: Vec<_> = (1..p).filter(|x| utils::gcd(*x, p) == 1).collect();
+        let group_order = group_elements.len();
+        let g1 = find_generators(id, &group_elements, op.clone());
+        let g2 = find_generators_by_order(id, group_order, &group_elements, op);
+        let set1: HashSet<_> = g1.iter().cloned().collect();
+        let set2: HashSet<_> = g2.iter().cloned().collect();
+        assert_eq!(set1, set2);
     }
 }

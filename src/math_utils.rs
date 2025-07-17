@@ -2,9 +2,8 @@ use num_traits::{One, Signed, ToPrimitive, Zero};
 use rand::Rng;
 use std::cmp::{PartialEq, PartialOrd};
 use std::ops::{BitAnd, Div, Mul, Rem, ShrAssign, Sub};
-/*
-greatest common divisor
-*/
+
+/// find greatest common divisor
 pub fn gcd<T>(mut a: T, mut b: T) -> T
 where
     T: Clone + Zero + Rem<Output = T>,
@@ -16,10 +15,9 @@ where
     }
     a
 }
-/*
-modular exponentiation find base^exp mod modulus.
-use square and multiply algorithm
-*/
+
+/// modular exponentiation find base^exp mod modulus.
+/// use square and multiply algorithm
 pub fn mod_pow<T>(mut base: T, mut exp: T, modulus: T) -> T
 where
     T: Clone
@@ -48,11 +46,10 @@ where
     }
     res
 }
-/*
-Computes the modular inverse of `a` modulo `n`, i.e., finds x such that:
-a * x ≡ 1 (mod n)
-Returns `None` if inverse does not exist (i.e., when gcd(a, n) ≠ 1)
-*/
+
+/// Computes the modular inverse of `a` modulo `n`, i.e., finds x such that:
+/// a * x ≡ 1 (mod n)
+/// Returns `None` if inverse does not exist (i.e., when gcd(a, n) ≠ 1)
 pub fn mod_inv<T>(a: T, n: T) -> Option<T>
 where
     T: Clone
@@ -91,21 +88,20 @@ where
 
     Some(t)
 }
-/*
-Checks whether a number is prime using the Miller-Rabin primality test.
 
-This algorithm is based on Fermat's little theorem, which states that
-if n is prime and a is any number such that 1 < a < n,
-then a^(n-1) ≡ 1 (mod n).
-
-Miller-Rabin strengthens this test by checking whether the base a
-reveals n as a composite through squaring behavior.
-
-Returns `true` if `n` is probably prime, and `false` if definitely composite.
-The probability of a false positive is at most 4^-round.
-
-This is a probabilistic algorithm: increasing `round` improves accuracy.
-*/
+/// Checks whether a number is prime using the Miller-Rabin primality test.
+/// 
+/// This algorithm is based on Fermat's little theorem, which states that
+/// if n is prime and a is any number such that 1 < a < n,
+/// then a^(n-1) ≡ 1 (mod n).
+/// 
+/// Miller-Rabin strengthens this test by checking whether the base a
+/// reveals n as a composite through squaring behavior.
+/// 
+/// Returns `true` if `n` is probably prime, and `false` if definitely composite.
+/// The probability of a false positive is at most 4^-round.
+/// 
+/// This is a probabilistic algorithm: increasing `round` improves accuracy.
 pub fn is_prime_miller_rabin<T>(n: &T, round: usize) -> bool
 where
     T: Clone
