@@ -1,6 +1,6 @@
 mod math_utils;
 pub mod utils {
-    pub use crate::math_utils::{gcd, mod_pow,mod_inv,is_prime_miller_rabin};
+    pub use crate::math_utils::{gcd, is_prime_miller_rabin, mod_inv, mod_pow};
 }
 
 // use utils::{gcd,mod_pow};
@@ -11,7 +11,7 @@ use group::lib;
 mod tests {
     use super::*;
     use num_bigint::BigUint;
-    use num_traits::FromPrimitive;
+    use num_traits::{FromPrimitive,Zero};
     #[test]
     fn test_mod_pow() {
         {
@@ -33,5 +33,16 @@ mod tests {
         assert_eq!(utils::mod_inv(3i64, 11i64), Some(4));
         assert_eq!(utils::mod_inv(10i64, 17i64), Some(12));
         assert_eq!(utils::mod_inv(6i64, 12i64), None);
+    }
+
+    #[test]
+    fn test_pollards_rho() {
+        use num_bigint::BigUint;
+        use num_traits::FromPrimitive;
+
+        let n = BigUint::from_u64(8051).unwrap();
+        let factor = group::lib::pollards_rho(n.clone());
+        assert!(factor.is_some());
+        assert!((n.clone() % factor.unwrap()).is_zero());
     }
 }
