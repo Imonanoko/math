@@ -109,7 +109,6 @@ This is a probabilistic algorithm: increasing `round` improves accuracy.
 pub fn is_prime_miller_rabin<T>(n: &T, round: usize) -> bool
 where
     T: Clone
-        + Copy
         + One
         + Zero
         + PartialOrd
@@ -135,7 +134,7 @@ where
     let n_minus_one = n.clone() - one.clone();
     let mut d = n_minus_one.clone();
     let mut s = 0u64;
-    while (d.clone() & one) == T::zero() {
+    while (d.clone() & one.clone()) == T::zero() {
         d >>= 1;
         s += 1;
     }
