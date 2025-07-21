@@ -1,6 +1,6 @@
 use num_traits::{FromPrimitive, One, Zero};
 use rand::Rng;
-use std::clone;
+use num_bigint::{BigUint, RandBigInt};
 use std::collections::{HashMap, HashSet};
 use std::hash::Hash;
 use std::ops::{Add, AddAssign, Div, DivAssign, Mul, Rem, Sub};
@@ -285,3 +285,28 @@ where
         .collect()
 }
 
+/// Attempts to find a generator `g` of order `q` in the multiplicative group `Z_p*`,
+/// using the method `g = h^((p - 1)/q) mod p`, where `h` is chosen randomly.
+///
+/// ## Parameters
+/// - `p`: A prime number defining the multiplicative group `Z_p*`.
+/// - `q`: The desired subgroup order. Must be a prime such that `q | (p - 1)`.
+///
+/// ## Returns
+/// - `Some(g)`: A generator of order `q` in `Z_p*` if found within the attempt limit.
+/// - `None`: No valid generator was found after the fixed number of attempts.
+pub fn find_generator_of_order_q(p: &BigUint, q: &BigUint) -> Option<BigUint> {
+    let one = BigUint::one();
+    let two = BigUint::from_u32(2u32).unwrap();
+    let p_minus_one = p - &one;
+    let exponent = &p_minus_one / q;
+    let mut rng = rand::thread_rng();
+    for _ in 0..100 {
+        let h = rng.gen_biguint_range(&two, &p_minus_one);
+        let g = h.modpow(&exponent, p);
+        if g != one {
+            return Some(g);
+        }
+    }
+    None
+}

@@ -5,6 +5,6 @@ edition = "2021"
 
 [dependencies]
 num-traits = "0.2.19"
-num-bigint = "0.4.6"
-rand = "0.9.1"
+num-bigint = { version = "0.4.6", features = ["rand"] }
+rand = "0.8.0"
 #test dependencies

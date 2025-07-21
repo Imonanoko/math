@@ -134,7 +134,7 @@ where
         d >>= 1;
         s += 1;
     }
-    let mut rng = rand::rng();
+    let mut rng = rand::thread_rng();
     // Perform the test 'round' number of times
     for _ in 0..round {
         let a = loop {
