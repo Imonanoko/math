@@ -11,11 +11,12 @@ pub mod groups {
 
 #[cfg(test)]
 mod tests {
-    use crate::groups::{find_generators, find_generators_by_order, is_generator};
-    use std::collections::HashSet;
     use super::*;
-    use num_bigint::BigUint;
+    use crate::groups::{find_generators, find_generators_by_order, is_generator};
+    use crate::utils::crt;
+    use num_bigint::{BigUint, BigInt};
     use num_traits::{FromPrimitive, Zero};
+    use std::collections::HashSet;
     #[test]
     fn test_mod_pow() {
         {
@@ -102,5 +103,13 @@ mod tests {
         let set1: HashSet<_> = g1.iter().cloned().collect();
         let set2: HashSet<_> = g2.iter().cloned().collect();
         assert_eq!(set1, set2);
+    }
+    #[test]
+    fn test_crt() {
+        let residues = vec![BigInt::from(2), BigInt::from(3), BigInt::from(2)];
+        let moduli = vec![BigInt::from(3), BigInt::from(4), BigInt::from(5)];
+
+        let x = crt(&residues, &moduli);
+        assert_eq!(x, Some(BigInt::from(47)));
     }
 }

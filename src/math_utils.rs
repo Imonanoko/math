@@ -1,7 +1,8 @@
-use num_traits::{One, Signed, ToPrimitive, Zero};
+use num_traits::{one, zero, One, Signed, ToPrimitive, Zero};
 use rand::Rng;
 use std::cmp::{PartialEq, PartialOrd};
-use std::ops::{BitAnd, Div, Mul, Rem, ShrAssign, Sub};
+use std::ops::{Add, BitAnd, Div, Mul, Rem, ShrAssign, Sub};
+use std::iter::zip;
 
 /// find greatest common divisor
 pub fn gcd<T>(mut a: T, mut b: T) -> T
@@ -90,17 +91,17 @@ where
 }
 
 /// Checks whether a number is prime using the Miller-Rabin primality test.
-/// 
+///
 /// This algorithm is based on Fermat's little theorem, which states that
 /// if n is prime and a is any number such that 1 < a < n,
 /// then a^(n-1) ≡ 1 (mod n).
-/// 
+///
 /// Miller-Rabin strengthens this test by checking whether the base a
 /// reveals n as a composite through squaring behavior.
-/// 
+///
 /// Returns `true` if `n` is probably prime, and `false` if definitely composite.
 /// The probability of a false positive is at most 4^-round.
-/// 
+///
 /// This is a probabilistic algorithm: increasing `round` improves accuracy.
 pub fn is_prime_miller_rabin<T>(n: &T, round: usize) -> bool
 where
@@ -164,6 +165,75 @@ where
             continue;
         }
         return false;
+    }
+    true
+}
+/// Solves a system of simultaneous congruences using the Chinese Remainder Theorem (CRT).
+///
+/// Given a list of residues `a_i` and pairwise coprime moduli `m_i`, finds an integer `x`
+/// such that:
+///
+///     x ≡ a_i mod m_i   for all i
+///
+/// The returned solution `x` is the unique solution modulo the product of all `m_i`.
+///
+/// # Arguments
+/// * `residues` - A slice of the right-hand sides of the congruences (a₁, a₂, ..., aₙ).
+/// * `moduli`   - A slice of the moduli (m₁, m₂, ..., mₙ), which must be pairwise coprime.
+///
+/// # Returns
+/// * `Some(x)` such that x satisfies all congruences and 0 ≤ x < M, where M = m₁·m₂·...·mₙ.
+/// * `None` if any inverse does not exist or input is invalid (e.g., non-coprime moduli).
+pub fn crt<T>(residues: &[T], moduli: &[T]) -> Option<T>
+where
+    T: Clone
+        + PartialEq
+        + std::cmp::PartialOrd
+        + Eq
+        + Zero
+        + One
+        + Signed
+        + Rem<Output = T>
+        + Mul<Output = T>
+        + Div<Output = T>
+        + Add<Output = T>,
+{
+    if !all_pairwise_coprime(moduli) {
+        return None;
+    }
+    let mut common_multiple  = T::one();
+    for mi in moduli {
+        common_multiple = common_multiple * mi.clone();
+    }
+    let mi:Vec<T> = moduli.iter().map(|m|common_multiple.clone()/m.clone()).collect();
+    let yi:Vec<T>= zip(mi.clone(),moduli).map(|(a,b)| mod_inv(a, b.clone()).unwrap()).collect();
+    let mut res = T::zero();
+    for i in 0..residues.len() {
+        res = res + yi[i].clone()*mi[i].clone()*residues[i].clone();
+    }
+    Some(res % common_multiple)
+}
+/// Checks whether all elements in the `moduli` slice are pairwise coprime.
+///
+/// That is, for every pair (mi, mj), ensures that gcd(mi, mj) == 1.
+/// This is a necessary condition for the Chinese Remainder Theorem (CRT)
+/// to yield a unique solution modulo the product of all moduli.
+///
+/// # Arguments
+/// * `moduli` - A slice of modulus values.
+///
+/// # Returns
+/// * `true` if every pair of moduli are coprime; `false` otherwise.
+pub fn all_pairwise_coprime<T>(moduli: &[T]) -> bool
+where
+    T: Clone + Zero + One + Rem<Output = T> + PartialEq,
+{
+    for i in 0..moduli.len() {
+        for j in i + 1..moduli.len() {
+            if gcd(moduli[i].clone(), moduli[j].clone()) != T::one() {
+                return false;
+            }
+        }
     }
     true
 }
